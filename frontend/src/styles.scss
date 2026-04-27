@@ -1,0 +1,184 @@
+/* ========================================
+   YAREN TRANSCODER - Global Design System
+   Premium Dark Theme
+   ======================================== */
+
+/* CSS Custom Properties */
+/* CSS Custom Properties */
+:root {
+  /* --- LIGHT THEME (Default) --- */
+  --bg-primary: #f8f9fa;
+  /* Light Gray Background */
+  --bg-secondary: #ffffff;
+  /* White Secondary */
+  --bg-card: #ffffff;
+  /* White Card */
+  --bg-card-hover: #f1f3f5;
+  /* Hover Effect */
+  --bg-input: #e9ecef;
+  /* Input Background */
+  --bg-sidebar: #ffffff;
+  /* White Sidebar */
+
+  --text-primary: #1f2937;
+  /* Gray-900 */
+  --text-secondary: #4b5563;
+  /* Gray-600 */
+  --text-muted: #9ca3af;
+  /* Gray-400 */
+
+  --border-color: #e5e7eb;
+  /* Gray-200 */
+  --border-glow: rgba(79, 70, 229, 0.4);
+
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-glow: 0 0 15px rgba(79, 70, 229, 0.2);
+
+  /* Accent Colors (Shared) */
+  --accent-primary: #4f46e5;
+  /* Indigo-600 */
+  --accent-primary-light: #6366f1;
+  /* Indigo-500 */
+  --accent-secondary: #06b6d4;
+  /* Cyan-500 */
+  --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  --accent-gradient-alt: linear-gradient(135deg, #06b6d4 0%, #4f46e5 100%);
+
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Radius & Transitions */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --transition-fast: 0.15s ease-in-out;
+  --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* --- DARK THEME --- */
+[data-theme="dark"] {
+  --bg-primary: #0b0c10;
+  /* Deep Dark Background */
+  --bg-secondary: #0d0e12;
+  /* Slightly Lighter Secondary */
+  --bg-card: #151623;
+  /* Premium Dark Card */
+  --bg-card-hover: #1b1d2e;
+  /* Card Hover */
+  --bg-input: #0e1015;
+  /* Deep Input Background */
+  --bg-sidebar: #0b0c10;
+  /* Dark Sidebar blending with bg */
+
+  --text-primary: #ffffff;
+  /* Pure White Text for better contrast */
+  --text-secondary: #e2e8f0;
+  /* Slate 200 */
+  --text-muted: #94a3b8;
+  /* Slate 400 */
+
+  --border-color: rgba(255, 255, 255, 0.05);
+  /* Dark Border */
+  --border-glow: rgba(56, 189, 248, 0.2);
+
+  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.8), 0 0 10px rgba(56, 189, 248, 0.03);
+  --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.15);
+
+  /* Adjust Accents for Dark Mode */
+  --accent-primary: #38bdf8;
+  /* Vibrant Cyan/Blue */
+  --accent-primary-light: #7dd3fc;
+  --accent-gradient: linear-gradient(to right, #6366f1, #38bdf8);
+}
+
+/* Reset */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body,
+html {
+  height: 100%;
+  width: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[data-theme="dark"] body {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Selection */
+::selection {
+  background: var(--accent-primary);
+  color: white;
+}
+
+/* Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(108, 92, 231, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(108, 92, 231, 0.4);
+  }
+}

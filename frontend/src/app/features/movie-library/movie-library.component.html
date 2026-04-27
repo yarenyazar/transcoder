@@ -1,0 +1,56 @@
+<div class="library-container">
+  <div class="header-glass">
+    <div class="title-area">
+      <h1>Movie Library & Watch Party</h1>
+      <p>Select content to watch or create a synchronized room with your friends</p>
+    </div>
+  </div>
+
+  <div class="content-section">
+    <div class="grid" *ngIf="vodContents.length > 0">
+      <div class="movie-card" *ngFor="let content of vodContents">
+        <div class="poster">
+          <img [src]="content.webpPosterUrl || content.posterUrl || 'assets/placeholder-poster.png'" alt="{{ content.title }}">
+          
+          <div class="overlay">
+            <div class="actions-wrapper">
+              <button class="main-play-btn" (click)="watchContent(content.id, $event)">
+                <span class="icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </span> 
+                Watch
+              </button>
+              <button class="party-btn" (click)="startWatchParty(content.id, $event)">
+                <span class="icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><circle cx="19" cy="11" r="4"/></svg>
+                </span>
+                Watch Party
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="details">
+          <h3 class="title" [title]="content.title">{{ content.title }}</h3>
+          <div class="meta">
+            <span class="year">{{ content.releaseYear }}</span>
+            <span class="type-badge">{{ content.type | uppercase }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Preparing Library...</p>
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoading && vodContents.length === 0">
+      <div class="icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M17 3v18"/><path d="M3 7h4"/><path d="M3 12h4"/><path d="M3 17h4"/><path d="M17 7h4"/><path d="M17 12h4"/><path d="M17 17h4"/></svg>
+      </div>
+      <h3>No Watchable Content Yet</h3>
+      <p>New content will appear here once added and processed.</p>
+    </div>
+  </div>
+
+</div>

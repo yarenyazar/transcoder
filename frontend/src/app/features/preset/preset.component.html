@@ -1,0 +1,264 @@
+<div class="page-container">
+  <aside class="form-section">
+    <div class="header" [class.editing-mode]="isEditing">
+      <div class="title-group">
+        <h1>{{ isEditing ? 'Edit Profile' : 'Presets' }}</h1>
+        <p>{{ isEditing ? 'You are updating the existing configuration.' : 'Create a detailed configuration profile.' }}</p>
+      </div>
+      <button *ngIf="!isEditing" class="btn-open-drawer" (click)="openPresetsModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+          </path>
+        </svg>
+        Saved Profiles
+      </button>
+    </div>
+
+    <div class="preset-card">
+      <div class="form-group">
+        <label>Profile Name</label>
+        <input type="text" [(ngModel)]="newPreset.name" placeholder="e.g., 4K Pro Archive">
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="tab-nav">
+        <button [class.active]="activeTab === 'basic'" (click)="activeTab = 'basic'">Basic Settings</button>
+        <button [class.active]="activeTab === 'advanced'" (click)="activeTab = 'advanced'">Advanced Settings</button>
+      </div>
+
+      <!-- BASIC TAB -->
+      <div *ngIf="activeTab === 'basic'">
+        <!-- 1. VIDEO & RESOLUTION GROUP -->
+        <div class="group-card">
+          <div class="group-header">
+            <span class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+            </span>
+            <h3>Video & Resolution</h3>
+          </div>
+
+          <div class="group-body">
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label>Resolution</label>
+                <select [(ngModel)]="selectedResolution" (change)="onResolutionChange()">
+                  <option value="3840x2160">4K (3840x2160)</option>
+                  <option value="2560x1440">2K / 1440p (2560x1440)</option>
+                  <option value="1920x1080">Full HD / 1080p (1920x1080)</option>
+                  <option value="1280x720">HD / 720p (1280x720)</option>
+                  <option value="854x480">SD / 480p (854x480)</option>
+                  <option value="640x360">Web / 360p (640x360)</option>
+                  <option value="426x240">Low / 240p (426x240)</option>
+                  <option value="256x144">Mobile / 144p (256x144)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Aspect Ratio</label>
+              <select [(ngModel)]="newPreset.aspectRatio">
+                <option value="16:9">16:9 (Widescreen)</option>
+                <option value="4:3">4:3 (Standard)</option>
+                <option value="1:1">1:1 (Square)</option>
+                <option value="9:16">9:16 (Vertical / Story)</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group half">
+                <label>FPS</label>
+                <select [(ngModel)]="newPreset.fps">
+                  <option [ngValue]="24">24 FPS</option>
+                  <option [ngValue]="30">30 FPS</option>
+                  <option [ngValue]="60">60 FPS</option>
+                </select>
+              </div>
+              <div class="form-group half">
+                <label>Codec</label>
+                <select [(ngModel)]="newPreset.videoCodec">
+                  <option value="libx264">H.264 (AVC)</option>
+                  <option value="libx265">H.265 (HEVC)</option>
+                  <option value="libsvtav1">AV1 (Modern)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. AUDIO GROUP -->
+        <div class="group-card">
+          <div class="group-header">
+            <span class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              </svg>
+            </span>
+            <h3>Audio Settings</h3>
+          </div>
+          <div class="group-body">
+            <div class="form-row">
+              <div class="form-group half">
+                <label>Codec</label>
+                <select [(ngModel)]="newPreset.audioCodec">
+                  <option value="aac">AAC</option>
+                  <option value="mp3">MP3</option>
+                  <option value="opus">Opus</option>
+                </select>
+              </div>
+              <div class="form-group half">
+                <label>Bitrate (kbps)</label>
+                <input type="number" [(ngModel)]="newPreset.audioBitrate" placeholder="192">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. QUALITY GROUP -->
+        <div class="group-card">
+          <div class="group-header">
+            <span class="icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </span>
+            <h3>Quality & Speed</h3>
+          </div>
+          <div class="group-body">
+            <div class="form-group">
+              <label>Processing Speed (Preset)</label>
+              <select [(ngModel)]="newPreset.presetSpeed">
+                <option value="ultrafast">Ultrafast (Fastest / Lower Quality)</option>
+                <option value="medium">Medium (Balanced)</option>
+                <option value="slow">Slow (Higher Quality)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Format (Container)</label>
+              <select [(ngModel)]="newPreset.container">
+                <option value="mp4">MP4</option>
+                <option value="mkv">MKV</option>
+                <option value="webm">WebM</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save/Update Buttons -->
+        <div class="action-buttons">
+          <button *ngIf="isEditing" class="btn-cancel" (click)="cancelEdit()">
+            Cancel
+          </button>
+          <button class="btn-save" (click)="savePreset()" [disabled]="!newPreset.name">
+            <span class="save-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+            </span>
+            {{ isEditing ? 'Update Profile' : 'Save Profile' }}
+          </button>
+        </div>
+      </div> <!-- End of Basic Tab -->
+
+      <!-- Placeholder for Advanced Tab (Simplified for now) -->
+      <div *ngIf="activeTab === 'advanced'">
+        <p style="color: var(--text-secondary); text-align: center; padding: 20px;">
+          Advanced settings are under maintenance in this version. You can use basic settings.
+        </p>
+      </div>
+
+    </div>
+  </aside>
+
+  <div class="modal-overlay" *ngIf="showPresetsList" (click)="closePresetsModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Saved Profiles <span class="count">{{ presets.length }}</span></h3>
+        <button class="btn-close" (click)="closePresetsModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- LIST CARDS -->
+      <div class="preset-list-modal">
+        <div class="preset-card-row" *ngFor="let p of presets">
+          <div class="card-left">
+            <div class="p-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                </path>
+              </svg>
+            </div>
+            <div class="p-info">
+              <h4>{{ p.name }}</h4>
+              <div class="p-badges">
+                <span class="badge-fmt">{{ p.container | uppercase }}</span>
+                <span class="badge-res">{{ p.width }}x{{ p.height }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-center">
+            <div class="p-meta">
+              <span class="meta-label">CODEC</span>
+              <span class="meta-val">{{ p.videoCodec }}</span>
+            </div>
+            <div class="p-meta">
+              <span class="meta-label">FPS</span>
+              <span class="meta-val">{{ p.fps }}</span>
+            </div>
+            <div class="p-meta">
+              <span class="meta-label">AUDIO</span>
+              <span class="meta-val">{{ p.audioCodec }}</span>
+            </div>
+            <div class="p-meta">
+              <span class="meta-label">SPEED</span>
+              <span class="meta-val">{{ p.presetSpeed }}</span>
+            </div>
+          </div>
+
+          <div class="card-right">
+            <button class="btn-action edit" (click)="editPreset(p)" title="Edit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="btn-action delete" (click)="deletePreset(p.id, $event)" title="Delete">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

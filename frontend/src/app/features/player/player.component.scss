@@ -1,0 +1,104 @@
+/* ============================
+   PLAYER - Premium Dark
+   ============================ */
+
+.player-container {
+  padding: 40px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInUp 0.5s ease;
+}
+
+.video-card {
+  background: var(--bg-card);
+  padding: 28px;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-color);
+  width: 100%;
+  max-width: 960px;
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h2 {
+      color: var(--text-primary);
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      max-width: 70%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+.video-wrapper {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 16 / 9;
+
+  video {
+    width: 100%;
+    height: 100%;
+    outline: none;
+  }
+}
+
+.btn-back {
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: var(--transition-smooth);
+  font-family: 'Inter', sans-serif;
+
+  &:hover {
+    transform: translateX(-4px);
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
+  }
+}
+
+.job-details {
+  margin-top: 20px;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 16px;
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .detail-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  .detail-value {
+    font-size: 0.9rem;
+    color: var(--accent-primary-light);
+    font-weight: 600;
+  }
+}

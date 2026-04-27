@@ -1,0 +1,47 @@
+<div class="transcode-container">
+  <main class="upload-card">
+    <header>
+      <h1>Video Transcode</h1>
+      <p>Select the file and profile you want to convert.</p>
+    </header>
+
+    <div class="step-box">
+      <label>1. Select Profile (Preset)</label>
+      <select [(ngModel)]="selectedPresetId">
+        <option [ngValue]="null" disabled selected>Please select a preset...</option>
+        <option *ngFor="let p of presets" [ngValue]="p.id">
+          {{ p.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="step-box">
+      <label>2. Select Video File</label>
+
+      <!-- Option A: Upload New -->
+      <input type="file" (change)="onFileSelected($event)" accept="video/*" id="videoUpload" hidden>
+      <label for="videoUpload" class="file-input-wrapper" [class.active]="selectedFile">
+        ☁️ {{ selectedFile ? 'New File: ' + selectedFile.name : 'Upload New Video' }}
+      </label>
+
+      <div class="separator">- OR -</div>
+
+      <!-- Option B: Select Existing -->
+      <select [(ngModel)]="selectedFileName" (change)="onExistingFileSelected()">
+        <option [ngValue]="null" disabled selected>Select from existing files...</option>
+        <option *ngFor="let file of uploadedFiles" [ngValue]="file">
+          🎬 {{ file }}
+        </option>
+      </select>
+
+      <p class="hint" *ngIf="uploadedFiles.length === 0">
+        No files on the server yet. You can upload one above.
+      </p>
+    </div>
+
+    <button class="btn-start" (click)="startProcess()"
+      [disabled]="(!selectedFile && !selectedFileName) || !selectedPresetId">
+      Start Conversion
+    </button>
+  </main>
+</div>

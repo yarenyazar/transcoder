@@ -1,0 +1,189 @@
+<div class="watch-page" *ngIf="!isLoading && content">
+    <!-- Info view (Not Playing) -->
+    <div class="backdrop" *ngIf="!isPlaying"
+        [style.backgroundImage]="'linear-gradient(to right, #141414 10%, transparent 60%), linear-gradient(to top, #141414 10%, transparent 80%), url(' + (content.backdropUrl || content.posterUrl || 'assets/placeholder-backdrop.jpg') + ')'">
+
+        <div class="content-info">
+            <button class="back-btn" (click)="goBack()">← Back</button>
+
+            <h1 class="title">{{ content.title }}</h1>
+
+            <div class="meta">
+                <span class="year">{{ content.releaseYear }}</span>
+                <span class="duration" *ngIf="content.durationSeconds">{{ (content.durationSeconds/60) | number:'1.0-0'
+                    }} min</span>
+                <span class="type">{{ content.type | uppercase }}</span>
+                <span class="badge" [ngClass]="content.status.toLowerCase()">{{ content.status }}</span>
+            </div>
+
+            <div class="actions">
+                <button class="play-btn" (click)="playVideo()">
+                    <span class="icon">▶</span> Watch
+                </button>
+                <button class="add-list-btn">+</button>
+            </div>
+
+            <p class="description">{{ content.description }}</p>
+
+            <div class="cast-section" *ngIf="content.castMembers && content.castMembers.length > 0">
+                <h3>Cast</h3>
+                <div class="cast-list">
+                    <span class="cast-member" *ngFor="let member of content.castMembers">
+                        {{ member.name }}
+                        <span class="role">({{ member.role }})</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Player View (Playing) -->
+    <div class="player-wrapper" *ngIf="isPlaying" (mousemove)="onMouseMove()" (click)="togglePlay()">
+        <button class="player-back-btn" (click)="goBack()">
+            <span class="icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </span>
+            Back
+        </button>
+
+        <div class="video-container" [class.hide-cursor]="!showControls && !showSettings">
+            <video #videoPlayer class="premium-video" [autoplay]="true" playsinline crossorigin="anonymous">
+                <ng-container *ngIf="content.subtitles">
+                    <track *ngFor="let sub of content.subtitles | keyvalue; let first = first" [src]="sub.value"
+                        kind="subtitles" [srclang]="sub.key" [label]="getLanguageName($any(sub.key))" [default]="false">
+                </ng-container>
+            </video>
+
+            <!-- Player Controls Overlay -->
+            <div class="controls-overlay" [class.visible]="showControls || showSettings"
+                (click)="$event.stopPropagation()">
+
+                <!-- Center Play/Pause Large Icon -->
+                <div class="center-controls" *ngIf="isPaused">
+                    <div class="large-play-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    </div>
+                </div>
+
+                <div class="bottom-controls">
+                    <!-- Progress Bar -->
+                    <div class="progress-bar-container" (mousedown)="$event.stopPropagation(); startDragging($event)"
+                        #progressBar>
+                        <div class="progress-bg"></div>
+                        <div class="progress-buffer" [style.width.%]="bufferPercent"></div>
+                        <div class="progress-current" [style.width.%]="progressPercent"></div>
+                        <div class="progress-handle" [style.left.%]="progressPercent"></div>
+                    </div>
+
+                    <div class="controls-row">
+                        <div class="left-group">
+                            <button class="control-btn" (click)="togglePlay()">
+                                <span class="icon" *ngIf="isPaused">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                </span>
+                                <span class="icon" *ngIf="!isPaused">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                </span>
+                            </button>
+                            <button class="control-btn" (click)="skip(-10)">
+                                <span class="icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
+                                </span>
+                            </button>
+                            <button class="control-btn" (click)="skip(10)">
+                                <span class="icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m13 17 5-5-5-5"/><path d="m6 17 5-5-5-5"/></svg>
+                                </span>
+                            </button>
+                            <div class="volume-group">
+                                <button class="control-btn" (click)="toggleMute()">
+                                    <span class="icon" *ngIf="volume === 0 || isMuted">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                                    </span>
+                                    <span class="icon" *ngIf="!(volume === 0 || isMuted) && volume < 0.5">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                                    </span>
+                                    <span class="icon" *ngIf="!(volume === 0 || isMuted) && volume >= 0.5">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                                    </span>
+                                </button>
+                                <input type="range" class="volume-slider" min="0" max="1" step="0.1"
+                                    [(ngModel)]="volume" (input)="onVolumeChange()">
+                            </div>
+                            <div class="time-display">
+                                {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
+                            </div>
+                        </div>
+
+                        <div class="right-group">
+                            <button class="control-btn" (click)="toggleSettings()">
+                                <span class="icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                                </span>
+                            </button>
+                            <button class="control-btn" (click)="toggleFullScreen()">
+                                <span class="icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 16v3a2 2 0 0 1-2 2h-3"/><path d="M3 19v-3a2 2 0 0 1 2-2h3"/></svg>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Menu (Visible when toggled) -->
+                <div class="premium-settings-menu" *ngIf="showSettings">
+                    <div class="settings-header">
+                        <h3>Settings</h3>
+                        <button class="close-settings" (click)="toggleSettings()">✕</button>
+                    </div>
+
+                    <div class="settings-body">
+                        <div class="settings-tab">
+                            <div class="tab-label">Quality</div>
+                            <div class="tab-options">
+                                <button [class.active]="currentLevel === -1" (click)="changeLevel(-1)">Auto</button>
+                                <button *ngFor="let level of hlsLevels; let i = index"
+                                    [class.active]="currentLevel === i" (click)="changeLevel(i)">
+                                    {{ level.name || level.height + 'p' }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="settings-tab" *ngIf="content.subtitles && (content.subtitles | keyvalue)?.length">
+                            <div class="tab-label">Subtitles</div>
+                            <div class="tab-options">
+                                <button [class.active]="currentSubtitle === 'off'"
+                                    (click)="changeSubtitle('off')">Off</button>
+                                <button *ngFor="let sub of content.subtitles | keyvalue"
+                                    [class.active]="currentSubtitle === sub.key"
+                                    (click)="changeSubtitle($any(sub.key))">
+                                    {{ getLanguageName($any(sub.key)) }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="settings-tab">
+                            <div class="tab-label">Speed</div>
+                            <div class="tab-options">
+                                <button *ngFor="let rate of playbackRates" [class.active]="currentRate === rate"
+                                    (click)="changeSpeed(rate)">
+                                    {{ rate }}x
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+</div>
+
+<div class="error-state" *ngIf="errorMessage && !isLoading">
+    <h2>Error!</h2>
+    <p>{{ errorMessage }}</p>
+    <button (click)="goBack()">Back to Library</button>
+</div>

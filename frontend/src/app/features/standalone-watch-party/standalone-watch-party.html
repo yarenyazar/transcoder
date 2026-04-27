@@ -1,0 +1,195 @@
+<div class="watch-party-container">
+
+  <!-- ─── JOIN / CREATE SCREEN ──────────────────────────────── -->
+  <ng-container *ngIf="!isJoined">
+    <div class="join-screen">
+      <div class="join-card">
+
+        <!-- Room list -->
+        <ng-container *ngIf="!roomId && !isCreatingNewRoom">
+          <h2>Watch Party</h2>
+          <p class="subtitle">Select a room or create a new one</p>
+
+          <div class="active-rooms" *ngIf="activeRooms.length > 0">
+            <div class="room-item" *ngFor="let room of activeRooms" (click)="selectRoom(room)">
+              <div class="room-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                  <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM14 13h-3v3H9v-3H6v-2h3V8h2v3h3v2z"/>
+                </svg>
+              </div>
+              <div class="room-meta">
+                <span class="room-id">Room #{{ room.roomId.substring(0,8) }}</span>
+                <span class="room-hint">Click to join</span>
+              </div>
+              <button *ngIf="canDelete(room)" class="del-btn" (click)="deleteRoom(room, $event)" title="Delete">✕</button>
+            </div>
+          </div>
+
+          <div class="no-rooms" *ngIf="activeRooms.length === 0">
+            <p>No active rooms yet.</p>
+          </div>
+
+          <button class="primary-btn" style="margin-top: 15px;" (click)="createRoom()">+ Create New Room</button>
+        </ng-container>
+
+        <!-- Password input -->
+        <ng-container *ngIf="roomId || isCreatingNewRoom">
+          <h2>{{ isCreatingNewRoom ? 'New Room' : 'Join Room' }}</h2>
+          <p class="subtitle" *ngIf="!isCreatingNewRoom">Room: <code>#{{ roomId.substring(0,8) }}</code></p>
+
+          <div class="error-msg" *ngIf="joinError">{{ joinError }}
+            <button class="retry-link" (click)="retry()">Try again</button>
+          </div>
+
+          <div class="input-group">
+            <input
+              id="wp-password"
+              type="password"
+              autocomplete="one-time-code"
+              [(ngModel)]="password"
+              [placeholder]="isCreatingNewRoom ? 'Set a password...' : 'Enter password...'"
+              (keyup.enter)="isCreatingNewRoom ? createRoom() : joinRoom()"
+            />
+            <button class="primary-btn"
+              (click)="isCreatingNewRoom ? createRoom() : joinRoom()"
+              [disabled]="!password || isCheckingAuth">
+              {{ isCheckingAuth ? 'Please wait...' : (isCreatingNewRoom ? 'Create' : 'Join') }}
+            </button>
+          </div>
+
+          <button *ngIf="isCreatingNewRoom" class="back-btn" (click)="isCreatingNewRoom = false; loadActiveRooms()">
+            ← Back
+          </button>
+        </ng-container>
+
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ─── WATCH ROOM ─────────────────────────────────────────── -->
+  <ng-container *ngIf="isJoined">
+    <div class="watch-room">
+
+      <!-- Header -->
+      <div class="room-header">
+        <div class="room-title">
+          <span>Watch Party</span>
+          <code class="room-code">#{{ roomId.substring(0,8) }}</code>
+        </div>
+        <div class="status-indicator">
+          <div class="ping" [class.success]="syncEngine.connectionStatus$ | async"></div>
+          {{ (syncEngine.connectionStatus$ | async) ? 'Connected' : 'Connecting...' }}
+        </div>
+        <button class="leave-btn" (click)="leaveRoom()">Leave Room</button>
+      </div>
+
+      <!-- ─── AUDIO PARTICIPANTS BAR REMOVED ──────────────────────────── -->
+
+      <!-- Ana içerik -->
+      <div class="room-content">
+
+        <!-- ─── PIP LOCAL VIDEO ────────────────────────────────────── -->
+        <div class="pip-local-video" #pipVideo 
+             (mousedown)="onPipMouseDown($event, pipVideo)"
+             [style.left]="pipLeft" 
+             [style.top]="pipTop" 
+             [style.right]="pipRight" 
+             [style.bottom]="pipBottom"
+             [class.dragging]="isDraggingPip">
+          <video 
+            autoplay muted playsinline 
+            [srcObject]="webRtcService.localStream$ | async" 
+            [hidden]="!(webRtcService.isCameraOn$ | async)">
+          </video>
+          <div class="pip-placeholder" *ngIf="!(webRtcService.isCameraOn$ | async)">
+            {{ username.charAt(0).toUpperCase() }}
+          </div>
+        </div>
+
+        <!-- Sol: Video -->
+        <div class="video-section">
+          <!-- ─── REMOTE VIDEO GRID ──────────────────────────────── -->
+          <div class="remote-video-grid" *ngIf="(webRtcService.remoteStreams$ | async) as streams">
+            <ng-container *ngIf="streams.size > 0">
+              <div class="remote-video-tile" *ngFor="let entry of streams | keyvalue; trackBy: trackByFn">
+                <div class="video-placeholder">{{ getViewerName(entry.key).substring(0,2).toUpperCase() }}</div>
+                <video autoplay playsinline [srcObject]="entry.value"></video>
+                <div class="participant-name-overlay">{{ getViewerName(entry.key) }}</div>
+              </div>
+            </ng-container>
+          </div>
+
+          <div class="no-film-msg" *ngIf="!(syncEngine.roomState$ | async)?.filmUrl && !(syncEngine.roomState$ | async)?.filmId">
+            <div class="no-film-inner">
+              <span>🎬</span>
+              <p>Film yükleniyor...</p>
+            </div>
+          </div>
+          <app-video-player *ngIf="(syncEngine.roomState$ | async)?.filmUrl || (syncEngine.roomState$ | async)?.filmId"></app-video-player>
+        </div>
+
+        <!-- Sağ: Kullanıcı listesi + Sohbet -->
+        <div class="side-panel">
+          <app-viewer-list></app-viewer-list>
+          <app-chat-panel></app-chat-panel>
+        </div>
+
+      </div>
+
+      <!-- ─── WEBRTC CONTROL BAR ─────────────────────────────── -->
+      <div class="webrtc-control-bar">
+        <div class="call-controls">
+
+          <!-- Mikrofon toggle -->
+          <button
+            id="mic-toggle-btn"
+            class="mic-btn"
+            [class.muted]="webRtcService.isMuted$ | async"
+            (click)="webRtcService.toggleMute()"
+            [title]="(webRtcService.isMuted$ | async) ? 'Mikrofonu Aç' : 'Mikrofonu Kapat'">
+            <!-- Unmuted: dolu mikrofon -->
+            <svg *ngIf="!(webRtcService.isMuted$ | async)" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5l-.01 6c0 1.66 1.34 3 3.01 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+            </svg>
+            <!-- Muted: çizgili mikrofon -->
+            <svg *ngIf="webRtcService.isMuted$ | async" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/>
+            </svg>
+          </button>
+
+          <!-- Kamera toggle -->
+          <button
+            class="mic-btn camera-btn"
+            [class.camera-off]="!(webRtcService.isCameraOn$ | async)"
+            [class.camera-on]="webRtcService.isCameraOn$ | async"
+            (click)="webRtcService.toggleCamera()"
+            [title]="(webRtcService.isCameraOn$ | async) ? 'Kamerayı Kapat' : 'Kamerayı Aç'">
+            <!-- Kamera Açık -->
+            <svg *ngIf="webRtcService.isCameraOn$ | async" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M15 8v8H5V8h10m1-2H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4V7c0-.55-.45-1-1-1z"/>
+            </svg>
+            <!-- Kamera Kapalı -->
+            <svg *ngIf="!(webRtcService.isCameraOn$ | async)" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21 6.5l-4 4V7c0-.55-.45-1-1-1H9.82L21 17.18V6.5zM3.27 2L2 3.27 4.73 6H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.21 0 .39-.08.54-.18L19.73 21 21 19.73 3.27 2zM5 8h1.73l8 8H5V8z"/>
+            </svg>
+          </button>
+
+        </div>
+
+        <!-- Bağlı peer sayısı -->
+        <span class="peer-count"
+              *ngIf="(webRtcService.remoteStreams$ | async) as streams">
+          {{ streams.size > 0 ? (streams.size + ' peer(s) connected') : 'Waiting for connection...' }}
+        </span>
+
+      </div>
+
+      <!-- Gizli audio elementleri — her uzak peer için -->
+      <ng-container *ngFor="let entry of (webRtcService.remoteStreams$ | async) | keyvalue; trackBy: trackByFn">
+        <audio [srcObject]="entry.value" autoplay playsinline style="display: none;"></audio>
+      </ng-container>
+
+    </div>
+  </ng-container>
+
+</div>

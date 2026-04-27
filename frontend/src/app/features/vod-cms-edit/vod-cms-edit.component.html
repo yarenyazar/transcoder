@@ -1,0 +1,249 @@
+<div class="edit-page-wrapper" *ngIf="!isLoading">
+    <!-- Dynamic Background -->
+    <div class="page-background"
+        [style.background-image]="'url(' + (content.backdropUrl || content.posterUrl || 'assets/placeholder.jpg') + ')'">
+    </div>
+
+    <div class="edit-container">
+        <!-- Header -->
+        <div class="header-section">
+            <div class="title-wrapper">
+                <h1>Edit Content</h1>
+                <p>{{ content.title }} ({{ content.releaseYear }})</p>
+            </div>
+            <div class="header-actions">
+                <button class="back-btn" (click)="goBack()">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                   Back to CMS
+                </button>
+                <a [routerLink]="['/watch/', contentId]" [queryParams]="{ autoplay: true, from: 'cms' }" target="_blank" class="watch-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    View as User
+                </a>
+            </div>
+        </div>
+
+        <!-- Alert Message -->
+        <div class="message-banner" *ngIf="message" [ngClass]="{'saving': isSaving}">
+            <span class="spinner" *ngIf="isSaving"></span>
+            {{ message }}
+        </div>
+
+        <!-- Form Card -->
+        <form class="glass-card main-form" (ngSubmit)="saveChanges()">
+            <div class="form-grid">
+                <!-- Left Column: General Info -->
+                <div class="form-column">
+                    <div class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                        <h3>General Information</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" name="title" [(ngModel)]="content.title" required placeholder="Enter content title">
+                    </div>
+
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select name="type" [(ngModel)]="content.type">
+                                <option value="movie">Movie</option>
+                                <option value="series">Series</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select name="status" [(ngModel)]="content.status">
+                                <option value="METADATA_ONLY">Metadata Only</option>
+                                <option value="ENCODING">Encoding</option>
+                                <option value="READY">Ready / Live</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>Release Year</label>
+                            <input type="number" name="releaseYear" [(ngModel)]="content.releaseYear" placeholder="2024">
+                        </div>
+                        <div class="form-group">
+                            <label>IMDb ID</label>
+                            <input type="text" name="imdbId" [(ngModel)]="content.imdbId" placeholder="tt1234567">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Media & Technical -->
+                <div class="form-column">
+                    <div class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="15" x="2" y="3" rx="2" ry="2"/><circle cx="12" cy="18" r="2"/></svg>
+                        <h3>Media Assets</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Poster URL</label>
+                        <input type="text" name="posterUrl" [(ngModel)]="content.posterUrl" placeholder="https://...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Backdrop URL</label>
+                        <input type="text" name="backdropUrl" [(ngModel)]="content.backdropUrl" placeholder="https://...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Duration (Seconds)</label>
+                        <input type="number" name="durationSeconds" [(ngModel)]="content.durationSeconds" placeholder="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group full-width" style="margin-top: 1.5rem;">
+                <label>Plot Description</label>
+                <textarea name="description" [(ngModel)]="content.description" placeholder="Describe the movie plot..."></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="save-btn" [disabled]="isSaving">
+                    <span *ngIf="!isSaving">Save Changes</span>
+                    <span *ngIf="isSaving">Saving...</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Video Upload & Encoding -->
+        <div class="glass-card upload-section">
+            <div class="section-header-compact">
+                <div class="header-icon-main">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.934a.5.5 0 0 0-.777-.416L16 11"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
+                    <h3>Upload Source Video</h3>
+                </div>
+                <p class="section-subtitle">Upload a '.mp4' or '.mkv' file. The system will automatically convert it to HLS.</p>
+            </div>
+
+            <div class="preset-manager">
+                <button type="button" class="preset-toggle-btn" (click)="showPresets = !showPresets">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                    {{ showPresets ? 'Hide Quality Settings' : 'Configure Quality Presets' }}
+                    <span class="badge" *ngIf="selectedPresetIds.size > 0">{{ selectedPresetIds.size }} Selected</span>
+                </button>
+
+                <div class="preset-selection-expand" *ngIf="showPresets">
+                    <div class="preset-grid">
+                        <label *ngFor="let p of availablePresets" class="preset-pill" [ngClass]="{'selected': selectedPresetIds.has(p.id)}">
+                            <input type="checkbox" (change)="togglePreset(p.id, $event)" style="display: none;">
+                            <span class="preset-name">{{ p.name }}</span>
+                            <span class="preset-height">{{ p.height }}p</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="upload-zone" [ngClass]="{'is-uploading': isUploading}">
+                <input type="file" id="video-upload" accept="video/mp4,video/x-m4v,video/*" (change)="onFileSelected($event)" [disabled]="isUploading">
+                <label for="video-upload" class="upload-drop-area">
+                    <div class="upload-icon-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    </div>
+                    <div class="upload-text-wrapper">
+                        <p class="primary-text" *ngIf="!selectedVideoFile">Choose video or drag & drop</p>
+                        <p class="secondary-text" *ngIf="!selectedVideoFile">MP4, MKV up to 5GB</p>
+                        <p class="selected-name" *ngIf="selectedVideoFile">{{ selectedVideoFile.name }}</p>
+                    </div>
+                </label>
+
+                <button class="upload-action-btn" (click)="uploadVideo()" [disabled]="!selectedVideoFile || isUploading">
+                    <span *ngIf="!isUploading">Start Upload & Encoding</span>
+                    <span *ngIf="isUploading" class="spinner-small"></span>
+                    <span *ngIf="isUploading">Processing...</span>
+                </button>
+            </div>
+
+            <div class="status-msg" *ngIf="uploadMessage" [ngClass]="{'success': uploadMessage.includes('✅'), 'error': uploadMessage.includes('❌')}">
+                {{ uploadMessage }}
+            </div>
+        </div>
+
+        <!-- Subtitle Management -->
+        <div class="glass-card subtitle-panel">
+            <div class="panel-header">
+                <div class="header-icon-main">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M7 8h10"/><path d="M7 12h10"/></svg>
+                    <h3>Subtitle Management</h3>
+                </div>
+                <p class="section-subtitle modern-spacing" style="margin-top: 20px; margin-bottom: 30px; display: block; opacity: 0.7;">Add multi-language captions or use AI to generate them automatically.</p>
+            </div>
+
+            <div class="subtitle-layout">
+                <!-- Manual Upload -->
+                <div class="sub-card">
+                    <div class="sub-card-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                        <h4>Manual Upload</h4>
+                    </div>
+
+                    <div class="sub-field">
+                        <label>Language</label>
+                        <select [(ngModel)]="subtitleLanguage">
+                            <option *ngFor="let lang of languages" [value]="lang.code">{{ lang.nativeName }}</option>
+                        </select>
+                    </div>
+
+                    <div class="sub-file-input">
+                        <input type="file" accept=".vtt,.srt" (change)="onSubtitleSelected($event)" id="sub-input-file">
+                        <label for="sub-input-file">
+                            {{ selectedSubtitleFile ? selectedSubtitleFile.name : 'Choose .vtt or .srt file' }}
+                        </label>
+                    </div>
+
+                    <button class="sub-action-btn" (click)="uploadSubtitle()" [disabled]="!selectedSubtitleFile || isUploadingSubtitle">
+                        {{ isUploadingSubtitle ? 'Uploading...' : 'Upload Subtitle' }}
+                    </button>
+                </div>
+
+                <!-- AI Generation -->
+                <div class="sub-card ai-powered">
+                    <div class="sub-card-header">
+                        <span class="ai-icon">✨</span>
+                        <h4>AI Generation</h4>
+                    </div>
+                    
+                    <p class="ai-info">Our AI will listen to the video audio and generate high-accuracy captions in seconds.</p>
+
+                    <div class="sub-field">
+                        <label>Source Audio Language</label>
+                        <select [(ngModel)]="subtitleLanguage">
+                            <option *ngFor="let lang of languages" [value]="lang.code">{{ lang.nativeName }}</option>
+                        </select>
+                    </div>
+
+                    <button class="ai-magic-btn" (click)="generateAiSubtitles()" [disabled]="isGeneratingAi">
+                        <span class="sparkle">✨</span>
+                        {{ isGeneratingAi ? 'Processing AI...' : 'Generate AI Subtitles' }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Existing Subtitles -->
+            <div class="active-subs" *ngIf="content.subtitles && ($any(content.subtitles) | keyvalue)?.length">
+                <h5>Active Subtitles</h5>
+                <div class="subs-grid">
+                    <div class="sub-tag" *ngFor="let sub of content.subtitles | keyvalue">
+                        <span class="cc-box">CC</span>
+                        <span class="lang-text">{{ getLanguageName($any(sub.key)) }}</span>
+                        <span class="indicator"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-msg" *ngIf="subtitleMessage" [ngClass]="{'success': subtitleMessage.includes('✅'), 'error': subtitleMessage.includes('❌')}">
+                {{ subtitleMessage }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loading-full" *ngIf="isLoading">
+    <div class="loader-circle"></div>
+    <p>Retrieving content data...</p>
+</div>

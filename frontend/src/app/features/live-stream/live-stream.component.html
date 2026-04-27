@@ -1,0 +1,363 @@
+<div class="live-container">
+  <!-- Premium Header -->
+  <div class="header-glass">
+    <div class="title-area">
+      <h1>Live Broadcasts</h1>
+      <p>Manage your streams and monitor live content in real-time.</p>
+    </div>
+    <div class="header-actions">
+      <div class="status-summary">
+        <span class="dot" [class.active]="sessions.length > 0"></span>
+        {{ sessions.length }} Active Sessions
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Stream Section -->
+  <div class="start-stream-card">
+    <div class="card-header">
+      <div class="title-with-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" class="header-icon">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+          <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+          <circle cx="12" cy="13" r="2"></circle>
+          <path d="M12 19v3"></path>
+        </svg>
+        <h3>Start New Stream</h3>
+      </div>
+      <p>Start broadcasting immediately using OBS or similar software.</p>
+    </div>
+
+    <div class="setup-grid">
+      <div class="setup-main">
+        <div class="form-section">
+          <h4>1. Stream Information</h4>
+          <div class="form-group">
+            <label>Stream Name</label>
+            <input type="text" [(ngModel)]="streamName" placeholder="e.g., Weekend Tournament" class="premium-input">
+          </div>
+          <div class="form-group">
+            <label>Stream Key</label>
+            <div class="input-with-action">
+              <input type="text" [(ngModel)]="streamKey" placeholder="e.g., live_778899" class="premium-input monospace">
+              <button (click)="generateKey()" class="action-btn" title="Generate Key">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 2v6h-6"></path>
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                  <path d="M3 22v-6h6"></path>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4>2. Recording & VOD Settings</h4>
+          <div class="dvr-controls">
+            <div class="control-item">
+              <label>Segment Duration (Minutes)</label>
+              <div class="number-input">
+                <input type="number" [(ngModel)]="recordIntervalMinutes" min="0" class="premium-input">
+                <span class="unit">min</span>
+              </div>
+              <small>0 = Recording Disabled</small>
+            </div>
+            <div class="control-item" [class.disabled]="recordIntervalMinutes === 0">
+              <label>Retention Period (Days)</label>
+              <div class="number-input">
+                <input type="number" [(ngModel)]="retentionPeriodDays" min="0" [disabled]="recordIntervalMinutes === 0"
+                  class="premium-input">
+                <span class="unit">days</span>
+              </div>
+              <small>0 = Keep Indefinitely</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-side">
+        <div class="form-section">
+          <h4>3. Broadcast Qualities</h4>
+          <p class="section-hint">Unselected profiles remain at original quality.</p>
+
+          <button class="btn-select-profiles" (click)="openQualitiesModal()">
+            <div class="btn-content">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              <span>{{ selectedPresetIds.length > 0 ? selectedPresetIds.length + ' Profiles Selected' : 'Select Output Profiles' }}</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <div class="server-info">
+          <label>Server URL (For OBS)</label>
+          <div class="copy-box" (click)="copyUrl()">
+            <code>{{ serverUrl }}</code>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <button class="btn-start-hero" (click)="startStream()" [disabled]="!streamKey || isLoading">
+        <span *ngIf="isLoading" class="loader"></span>
+        {{ isLoading ? 'Preparing System...' : 'Configure and Start Broadcast' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Active Sessions Section -->
+  <div class="content-section">
+    <div class="section-header">
+      <div class="title-with-icon">
+        <div class="live-indicator-wrapper">
+          <span class="live-pulse"></span>
+        </div>
+        <h2>Active & Past Broadcasts</h2>
+      </div>
+      <span class="item-count">{{ sessions.length }} Streams</span>
+    </div>
+
+    <div class="sessions-grid">
+      <div *ngIf="sessions.length === 0" class="empty-state">
+        <div class="icon-circle">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+            <circle cx="12" cy="13" r="2"></circle>
+            <path d="M12 19v3"></path>
+          </svg>
+        </div>
+        <h3>No Broadcasts Yet</h3>
+        <p>Start a new stream to share your content live.</p>
+      </div>
+
+      <div *ngFor="let s of sessions" class="session-card" [class.active-mode]="s.status === 'ACTIVE'">
+        <div class="card-glow"></div>
+        <div class="session-header-compact">
+          <div class="status-box" [ngClass]="s.status.toLowerCase()">
+            <span class="status-dot"></span>
+            {{ translateStatus(s.status) }}
+          </div>
+          <div class="key-box">
+            <span class="label">KEY:</span>
+            <span class="value">{{ s.streamKey }}</span>
+          </div>
+        </div>
+
+        <div class="session-body">
+          <h3 class="stream-title">{{ s.streamName || '(Untitled Stream)' }}</h3>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </span>
+              <div class="details">
+                <label>Start</label>
+                <span>{{ s.startTime | date:'dd MMM yyyy, HH:mm' }}</span>
+              </div>
+            </div>
+            <div class="info-item" *ngIf="s.endTime">
+              <span class="icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </span>
+              <div class="details">
+                <label>End</label>
+                <span>{{ s.endTime | date:'HH:mm' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dvr-details" *ngIf="(s.recordIntervalMinutes ?? 0) > 0">
+            <div class="dvr-stat">
+              <span class="label">VOD Cycle:</span>
+              <span class="value">{{ s.recordIntervalMinutes }} Minutes</span>
+            </div>
+            <div class="dvr-stat">
+              <span class="label">Retention:</span>
+              <span class="value">{{ (s.retentionPeriodDays ?? 0) > 0 ? s.retentionPeriodDays + ' Days' :
+                'Indefinite' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="session-footer">
+          <div class="action-group">
+            <button *ngIf="s.status === 'ACTIVE'" (click)="stopStream(s.id)" class="btn-stop" title="Stop">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6" y="6" width="12" height="12"></rect>
+              </svg>
+            </button>
+            <button *ngIf="s.status === 'ACTIVE'" (click)="playStream(s)" class="btn-play">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              Watch
+            </button>
+            <a *ngIf="(s.recordIntervalMinutes ?? 0) > 0" [routerLink]="['/vods', s.streamKey]" class="btn-vod">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                <line x1="7" y1="2" x2="7" y2="22"></line>
+                <line x1="17" y1="2" x2="17" y2="22"></line>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <line x1="2" y1="7" x2="7" y2="7"></line>
+                <line x1="2" y1="17" x2="7" y2="17"></line>
+                <line x1="17" y1="17" x2="22" y2="17"></line>
+                <line x1="17" y1="7" x2="22" y2="7"></line>
+              </svg>
+              Records
+            </a>
+          </div>
+          <button (click)="deleteStream(s.id)" class="btn-delete" title="Delete Session">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Qualities Selection Modal -->
+  <div class="modal-overlay" *ngIf="showQualitiesModal" (click)="closeQualitiesModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="title-group">
+          <h3>Broadcast Profiles</h3>
+          <p>Select the profiles to be transcoded during broadcast.</p>
+        </div>
+        <button class="btn-close" (click)="closeQualitiesModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="qualities-modal-body">
+        <div class="qualities-grid-modal">
+          <label *ngFor="let p of presets" class="quality-card" [class.selected]="selectedPresetIds.includes(p.id)">
+            <input type="checkbox" [value]="p.id" [checked]="selectedPresetIds.includes(p.id)"
+              (change)="togglePreset(p.id, $event)">
+            <div class="card-content">
+              <div class="check-indicator">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                  stroke-linecap="round" stroke-linejoin="round" *ngIf="selectedPresetIds.includes(p.id)">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <div class="info">
+                <span class="res">{{ p.width }}x{{ p.height }}</span>
+                <span class="name">{{ p.name }}</span>
+              </div>
+              <div class="badge">{{ p.container | uppercase }}</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-confirm" (click)="closeQualitiesModal()">Confirm Selection</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Player Modal -->
+  <div class="player-modal" *ngIf="playingSession">
+    <div class="player-content-wrapper">
+      <div class="player-header">
+        <div class="playing-info">
+          <span class="live-dot"></span>
+          <h3>{{ playingSession.streamName || playingSession.streamKey }}</h3>
+        </div>
+        <button (click)="closePlayer()" class="btn-close-round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="main-player-area">
+        <div class="video-container">
+          <video #videoPlayer controls autoplay></video>
+
+          <div class="player-controls-overlay" *ngIf="hlsLevels.length > 0 && !playingRecord">
+            <button class="quality-toggle" (click)="toggleQualityMenu()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                </path>
+              </svg>
+              {{ currentHlsLevel === -1 ? 'Auto' : getQualityLabel(hlsLevels[currentHlsLevel],
+              currentHlsLevel) }}
+            </button>
+            <div class="quality-popup" *ngIf="showQualityMenu">
+              <ul>
+                <li (click)="setQualityLevel(-1)" [class.active]="currentHlsLevel === -1">Auto</li>
+                <li *ngFor="let level of hlsLevels; let i = index" (click)="setQualityLevel(i)"
+                  [class.active]="currentHlsLevel === i">
+                  {{ getQualityLabel(level, i) }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="vod-timeline" *ngIf="recordings.length > 0">
+          <div class="timeline-header">
+            <h4>Past Records</h4>
+            <span class="count">{{ recordings.length }} Sections</span>
+          </div>
+          <div class="timeline-list">
+            <div class="timeline-brick live" (click)="playStream(playingSession!)" [class.active]="!playingRecord">
+              <span class="time">LIVE</span>
+            </div>
+            <div class="timeline-brick" *ngFor="let r of recordings" (click)="playRecording(r)"
+              [class.active]="playingRecord?.id === r.id">
+              <span class="date">{{ r.startTime | date:'dd.MM' }}</span>
+              <span class="time">{{ r.startTime | date:'HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

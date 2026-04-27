@@ -1,0 +1,84 @@
+<div class="vod-container" *ngIf="session">
+  <header class="page-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Back</span>
+      </button>
+
+      <div class="title-area">
+        <div class="badge-vod">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+            <line x1="7" y1="2" x2="7" y2="22"></line>
+            <line x1="17" y1="2" x2="17" y2="22"></line>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <line x1="2" y1="7" x2="7" y2="7"></line>
+            <line x1="2" y1="17" x2="7" y2="17"></line>
+            <line x1="17" y1="17" x2="22" y2="17"></line>
+            <line x1="17" y1="7" x2="22" y2="7"></line>
+          </svg>
+          VOD
+        </div>
+        <h2>{{ session.streamName || session.streamKey }}</h2>
+        <p>Select and watch past stream recordings from the timeline below.</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="player-content">
+    <div class="video-wrapper">
+      <div class="video-overlay" *ngIf="!playingRecord">
+        <div class="overlay-content">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <p>Select a recording to start watching</p>
+        </div>
+      </div>
+      <video #videoPlayer controls autoplay [class.hidden]="!playingRecord"></video>
+    </div>
+
+    <!-- Sports TV Style Timeline -->
+    <div class="timeline-container" *ngIf="recordings.length > 0">
+      <button class="live-btn" (click)="goToLive()" title="Connect to Live Stream">
+        <div class="live-indicator"></div>
+        LIVE
+      </button>
+
+      <div class="timeline-scroll">
+        <button class="timeline-btn" *ngFor="let r of recordings" (click)="playRecording(r)"
+          [class.active]="playingRecord?.id === r.id">
+          <div class="day">{{ r.startTime | date:'dd MMM yyyy' }}</div>
+          <div class="time">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            {{ r.startTime | date:'HH:mm' }}
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="recordings.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+      </div>
+      <h3>No recordings found</h3>
+      <p>There are no past recordings available for this stream session yet.</p>
+    </div>
+  </div>
+</div>
