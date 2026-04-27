@@ -39,6 +39,11 @@ A comprehensive, microservices-oriented Over-The-Top (OTT) video streaming platf
 
 ---
 
+## Project Screenshots
+Project screenshots are located in the `screenshots` folder.
+
+---
+
 ## Architecture
 
 The project follows a modular architecture orchestrated by Docker:
