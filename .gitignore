@@ -1,0 +1,52 @@
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build and Dependencies - Backend (Maven/Spring)
+backend/target/
+backend/bin/
+backend/*.log
+backend/uploads/
+backend/data/
+backend/outputs/
+
+# Build and Dependencies - Frontend (Angular)
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/npm-debug.log
+frontend/yarn-error.log
+
+# Build and Dependencies - Subtitle Service (Python)
+subtitle-service/__pycache__/
+subtitle-service/*.pyc
+subtitle-service/*.pyo
+subtitle-service/*.pyd
+subtitle-service/.pytest_cache/
+subtitle-service/venv/
+subtitle-service/.venv/
+subtitle-service/env/
+
+# Data and Volumes
+data/
+uploads/
+outputs/
+hls/
+*.mp4
+*.m3u8
+*.ts
+
+# Environment Variables
+.env
+*.env.local
+
+# Docker
+.docker/
+docker-compose.override.yml
